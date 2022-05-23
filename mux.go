@@ -7,11 +7,15 @@ import (
 	"github.com/josestg/mux/internal/trie"
 )
 
+// Mux is an HTTP request multiplexer. It matches the URL of each incoming
+// request against a list of registered patterns and calls the handler for the
+// pattern that matches the URL.
 type Mux struct {
 	router  *trie.Trie
 	options *Options
 }
 
+// New creates a new Mux with Default option.
 func New(appliers ...OptionApplier) *Mux {
 	options := newDefaultOption()
 
@@ -25,16 +29,20 @@ func New(appliers ...OptionApplier) *Mux {
 	}
 }
 
+// Handle registers the http.Handler for the given HTTP method and URL path.
 func (m *Mux) Handle(method string, path string, handler http.Handler) {
 	if err := m.router.InsertHandler(method, path, handler); err != nil {
 		panic(err)
 	}
 }
 
+// HandleFunc registers the http.HandlerFunc for the given HTTP method
+// and URL path.
 func (m *Mux) HandleFunc(method string, path string, handlerFunc http.HandlerFunc) {
 	m.Handle(method, path, handlerFunc)
 }
 
+// ServeHTTP implements the http.Handler interface.
 func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	handler, vars, err := m.router.FindHandler(r.Method, r.URL.Path)
 	if err != nil {
@@ -60,18 +68,22 @@ func contextWithVars(ctx context.Context, vars trie.Vars) context.Context {
 	return context.WithValue(ctx, varsContextKey, vars)
 }
 
+// GetVars returns URL variables.
 func GetVars(ctx context.Context) trie.Vars {
 	vars, _ := ctx.Value(varsContextKey).(trie.Vars)
 	return vars
 }
 
+// OptionApplier is a function for applying option.
 type OptionApplier func(o *Options)
 
+// Options holds Mux optional fields.
 type Options struct {
 	RoutesNotFoundHandler http.Handler
 	MethodNotFoundHandler http.Handler
 }
 
+// Default is a default option applier.
 func Default() OptionApplier {
 	return func(o *Options) {
 		o.RoutesNotFoundHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
