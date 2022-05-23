@@ -11,6 +11,46 @@ the request method. It also scales better and compatible with Go's [http.Handler
 This Mux is very simple, basically this Mux only aims to store and search 
 for handlers based on method and path patterns.
 
+## Quick Start
+
+```shell
+go get github.com/josestg/mux
+```
+
+### Usages
+
+```go
+package main
+
+import (
+	"fmt"
+	"io"
+	"log"
+	"net/http"
+
+	"github.com/josestg/mux"
+)
+
+func main() {
+	m := mux.New()
+
+	m.HandleFunc(http.MethodGet, "/hello", hello)
+	m.HandleFunc(http.MethodGet, "/hello/:name", helloWithVars)
+
+	log.Fatal(http.ListenAndServe("0.0.0.0:8080", m))
+}
+
+func hello(w http.ResponseWriter, _ *http.Request) {
+	io.WriteString(w, "Hello, World\n")
+}
+
+func helloWithVars(w http.ResponseWriter, r *http.Request) {
+	vars := mux.GetVars(r.Context())
+	msg := fmt.Sprintf("Hello, %s\n", vars.Get("name"))
+	io.WriteString(w, msg)
+}
+```
+
 
 ## How does it work?
 
