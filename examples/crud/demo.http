@@ -1,0 +1,37 @@
+### Create Book A
+POST {{host}}/books
+Content-Type: application/json
+
+{
+  "title": "Book A"
+}
+
+
+### Create Book B
+POST {{host}}/books
+Content-Type: application/json
+
+{
+  "title": "Book B"
+}
+
+### Create Book C
+POST {{host}}/books
+Content-Type: application/json
+
+{
+  "title": "Book C"
+}
+
+### Get All Books
+GET {{host}}/books
+Accept: application/json
+
+### Get Book Detail
+GET {{host}}/books/2
+Accept: application/json
+
+
+### Delete Book
+DELETE {{host}}/books/2
+Accept: application/json
