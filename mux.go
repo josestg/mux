@@ -56,9 +56,9 @@ func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	var wrappedHandler http.Handler
+	wrappedHandler := handler
 	for i := len(m.middlewares) - 1; i >= 0; i-- {
-		wrappedHandler = m.middlewares[i].Middleware(handler)
+		wrappedHandler = m.middlewares[i].Middleware(wrappedHandler)
 	}
 
 	ctx := contextWithVars(r.Context(), vars)
