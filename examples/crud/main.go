@@ -26,6 +26,17 @@ func main() {
 	m.HandleFunc(http.MethodGet, "/books/:id", h.detail)
 	m.HandleFunc(http.MethodDelete, "/books/:id", h.delete)
 
+	// add global middleware
+	m.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// do middleware stuff here
+			log.Println("doing middleware stuff here")
+
+			// call the next handler, which can be the next middleware or the final handler
+			next.ServeHTTP(w, r)
+		})
+	})
+
 	log.Fatal(http.ListenAndServe("0.0.0.0:8080", m))
 }
 
