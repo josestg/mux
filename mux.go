@@ -11,8 +11,9 @@ import (
 // request against a list of registered patterns and calls the handler for the
 // pattern that matches the URL.
 type Mux struct {
-	router  *trie.Trie
-	options *Options
+	router      *trie.Trie
+	options     *Options
+	middlewares []Middleware
 }
 
 // New creates a new Mux with Default option.
@@ -24,8 +25,9 @@ func New(appliers ...OptionApplier) *Mux {
 	}
 
 	return &Mux{
-		router:  trie.New(),
-		options: options,
+		router:      trie.New(),
+		options:     options,
+		middlewares: []Middleware{},
 	}
 }
 
@@ -54,8 +56,17 @@ func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	var wrappedHandler http.Handler
+	for i := len(m.middlewares) - 1; i >= 0; i-- {
+		wrappedHandler = m.middlewares[i].Middleware(handler)
+	}
+
 	ctx := contextWithVars(r.Context(), vars)
-	handler.ServeHTTP(w, r.WithContext(ctx))
+	wrappedHandler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+func (m *Mux) useMiddleware(mw Middleware) {
+	m.middlewares = append(m.middlewares, mw)
 }
 
 type contextType struct{}
