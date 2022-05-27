@@ -27,7 +27,7 @@ func New(appliers ...OptionApplier) *Mux {
 	return &Mux{
 		router:      trie.New(),
 		options:     options,
-		middlewares: []Middleware{},
+		middlewares: make([]Middleware, 0),
 	}
 }
 
@@ -58,7 +58,9 @@ func (m *Mux) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	wrappedHandler := handler
 	for i := len(m.middlewares) - 1; i >= 0; i-- {
-		wrappedHandler = m.middlewares[i].Middleware(wrappedHandler)
+		if m.middlewares[i] != nil {
+			wrappedHandler = m.middlewares[i].Middleware(wrappedHandler)
+		}
 	}
 
 	ctx := contextWithVars(r.Context(), vars)
